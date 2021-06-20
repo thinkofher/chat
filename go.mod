@@ -1,3 +1,4 @@
+// +heroku goVersion 1.16
 module github.com/thinkofher/websocket-chat
 
 go 1.16
