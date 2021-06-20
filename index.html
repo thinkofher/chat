@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Web Chat Example</title>
+    <link rel="stylesheet" type="text/css" href="neat.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <title>Web Chat</title>
+    <div id="chat-window" style="overflow-y: scroll; height:400px; width:500px;">
+    </div>
+    <form id="input-form">
+      <input type="text" id="nick" name="nick" placeholder="nickname">
+      <label for="msg">:</label>
+      <input type="text" id="msg" name="msg" placeholder="message">
+      <input type="submit" value="send">
+    </form>
+    <script src="/index.js" defer></script>
+  </body>
+</html>
