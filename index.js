@@ -1,4 +1,4 @@
-const chatURL = "ws://" + window.location.host + "/chat";
+const chatURL = "wss://" + window.location.host + "/chat";
 
 const chatWindow = document.getElementById("chat-window");
 const inputForm = document.getElementById("input-form");
