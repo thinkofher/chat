@@ -17,6 +17,9 @@ var index []byte
 //go:embed neat.css
 var neatCSS []byte
 
+//go:embed custom.css
+var customCSS []byte
+
 //go:embed index.js
 var indexJS []byte
 
@@ -29,6 +32,12 @@ func CSS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/css")
 	w.WriteHeader(http.StatusOK)
 	w.Write(neatCSS)
+}
+
+func CustomCSS(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "text/css")
+	w.WriteHeader(http.StatusOK)
+	w.Write(customCSS)
 }
 
 func JS(w http.ResponseWriter, r *http.Request) {
@@ -181,14 +190,15 @@ func main() {
 	m := pat.New()
 	m.Get("/", http.HandlerFunc(Index))
 	m.Get("/neat.css", http.HandlerFunc(CSS))
+	m.Get("/custom.css", http.HandlerFunc(CustomCSS))
 	m.Get("/index.js", http.HandlerFunc(JS))
 	m.Get("/chat", websocketChat)
 
 	// Register this pat with the default serve mux so that other packages
 	// may also be exported. (i.e. /debug/pprof/*)
 	http.Handle("/", m)
-	log.Println("Listening at 0.0.0.0:8080")
-	err := http.ListenAndServe("0.0.0.0:8080", nil)
+	log.Println("Listening at 0.0.0.0:5000")
+	err := http.ListenAndServe("0.0.0.0:5000", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
