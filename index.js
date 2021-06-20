@@ -5,6 +5,7 @@ const inputForm = document.getElementById("input-form");
 
 async function appendMessage({ nick, message }) {
   chatWindow.innerHTML += `<p><b>${nick}</b>: ${message}</p>`;
+  chatWindow.scrollTo(0, chatWindow.scrollHeight);
 }
 
 const socket = new WebSocket(chatURL);
