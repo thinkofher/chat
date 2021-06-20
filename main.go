@@ -58,6 +58,9 @@ type chat struct {
 	unsubscribeChan chan chan message
 	messages        chan message
 	upgrader        websocket.Upgrader
+	pingPeriod      time.Duration
+	pongWait        time.Duration
+	writeWait       time.Duration
 }
 
 func newChat() *chat {
@@ -70,6 +73,9 @@ func newChat() *chat {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		writeWait:  10 * time.Second,
+		pongWait:   60 * time.Second,
+		pingPeriod: ((60 * 9) / 10) * time.Second,
 	}
 }
 
@@ -128,20 +134,21 @@ func (c *chat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer conn.Close()
 
-	if err := conn.SetReadDeadline(time.Time{}); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if err := conn.SetWriteDeadline(time.Time{}); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	ticker := time.NewTicker(c.pingPeriod)
+	defer func() {
+		ticker.Stop()
+		conn.Close()
+	}()
 
 	out, unsub := c.subscribe()
 	defer unsub()
 
+	conn.SetReadDeadline(time.Now().Add(c.pongWait))
+	conn.SetPongHandler(func(string) error {
+		conn.SetReadDeadline(time.Now().Add(c.pongWait))
+		return nil
+	})
 	in, quit := c.listenMessages(conn)
 
 	type outMessage struct {
@@ -154,12 +161,18 @@ func (c *chat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case input := <-in:
 			c.send(input.nickname, input.body)
 		case output := <-out:
+			conn.SetWriteDeadline(time.Now().Add(c.writeWait))
 			if err := conn.WriteJSON(outMessage{
 				Nick:    output.nickname,
 				Message: output.body,
 			}); err != nil {
 				log.Println("chat.ServeHTTP: failed to send message")
 				continue
+			}
+		case <-ticker.C:
+			conn.SetWriteDeadline(time.Now().Add(c.writeWait))
+			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
 			}
 		case <-quit:
 			return
