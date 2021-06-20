@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	_ "embed"
 
@@ -128,6 +129,15 @@ func (c *chat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	if err := conn.SetReadDeadline(time.Time{}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := conn.SetWriteDeadline(time.Time{}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	out, unsub := c.subscribe()
 	defer unsub()
