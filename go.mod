@@ -1,5 +1,5 @@
 // +heroku goVersion 1.16
-module github.com/thinkofher/websocket-chat
+module github.com/thinkofher/chat
 
 go 1.16
 
